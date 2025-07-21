@@ -31,6 +31,8 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # Esta seção pode ser mantida, ela não causará erro,
+      # apenas não fará nada se os secrets não existirem.
       - name: Write Keys
         run: |
           if [ ! -z "${{ secrets.KEY_STORE }}" ]; then
@@ -41,10 +43,11 @@ jobs:
             echo "${{ secrets.KEY_STORE }}" | base64 --decode > app/key.jks
           fi
 
+      # --- AJUSTE 1: MUDADO DE assembleRelease PARA assembleDebug ---
       - name: Build with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
 
       - name: Get Version Name
         id: version
@@ -52,8 +55,9 @@ jobs:
           VERSION_NAME=$(grep "versionName" app/build.gradle | awk -F '"' '{print $2}' | head -n 1)
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
 
+      # --- AJUSTE 2: MUDADO O CAMINHO PARA A PASTA debug ---
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-${{ steps.version.outputs.version_name }}
-          path: app/build/outputs/apk/release/*.apk
+          name: debug-apk-${{ steps.version.outputs.version_name }}
+          path: app/build/outputs/apk/debug/*.apk
